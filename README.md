@@ -81,7 +81,7 @@ Where the gains come from: (a) removing Stage 1, (b) Kimi-K3 against the learned
 
 ```text
 run.sh                          launcher: stage1 (Algorithm 1), stage2 (Algorithm 2), eval, all
-data/tasks.json                 the 150 benchmark tasks (source_id, goal, page)
+data/tasks.json                 the 150 benchmark tasks (goal, page)
 assets/                         figures from the paper
 advsim2real/
   world/                        WebWorld world-model client and rollouts
