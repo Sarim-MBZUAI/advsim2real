@@ -17,11 +17,9 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from web_rollouts import rollout_episode                                   # noqa: E402
-from web_consistency import extract_outcome                                # noqa: E402
-from kimi_judge import DEFAULT_CACHE_PATH, DEFAULT_MODEL, judge_trajectory, load_api_key, reference_for_task  # noqa: E402
+from advsim2real.world.rollouts import rollout_episode
+from advsim2real.world.consistency import extract_outcome
+from advsim2real.judge.llm_judge import DEFAULT_CACHE_PATH, DEFAULT_MODEL, judge_trajectory, load_api_key, reference_for_task
 
 ROLLOUT_SEED_BASE = 1000
 

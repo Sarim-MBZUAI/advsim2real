@@ -9,7 +9,7 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
-from _lib.schedules import executor_task_schedule
+from advsim2real.training.schedules import executor_task_schedule
 
 
 @dataclass

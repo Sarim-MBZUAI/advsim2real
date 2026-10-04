@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 
 import requests
 
-from web_consistency import extract_outcome, trajectory_signature
+from advsim2real.world.consistency import extract_outcome, trajectory_signature
 
 EXEC_API = os.environ.get("EXEC_API", "http://127.0.0.1:8005/v1")
 WORLD_API = os.environ.get("WORLD_API", "http://127.0.0.1:8004/v1")

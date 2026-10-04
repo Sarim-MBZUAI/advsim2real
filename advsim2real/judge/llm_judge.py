@@ -19,8 +19,8 @@ import requests
 
 DEFAULT_MODEL = os.environ.get("JUDGE_MODEL") or "Qwen/Qwen3.8-27B"
 DEEPINFRA_BASE_URL = os.environ.get("DEEPINFRA_BASE_URL", "https://api.deepinfra.com/v1/openai").rstrip("/")
-DEFAULT_CACHE_PATH = os.environ.get("JUDGE_CACHE_PATH") or os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), ".judge_cache.jsonl")
+DEFAULT_CACHE_PATH = os.environ.get("JUDGE_CACHE_PATH") or os.path.join(   # repository root
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".judge_cache.jsonl")
 JUDGE_MAX_WAIT_S = float(os.environ.get("JUDGE_MAX_WAIT_S", "0"))   # 0 = keep retrying outages
 GENERATION = {"temperature": 0, "max_tokens": 16, "reasoning_effort": "none",
               "chat_template_kwargs": {"enable_thinking": False}}

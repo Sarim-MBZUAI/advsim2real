@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "advsim2real"
+version = "0.1.0"
+description = "AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch",
+    "transformers>=5",
+    "peft",
+    "vllm",
+    "requests",
+]
+
+[tool.setuptools.packages.find]
+include = ["advsim2real*"]

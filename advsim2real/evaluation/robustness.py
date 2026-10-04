@@ -13,11 +13,9 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from web_rollouts import rollout_episode                                       # noqa: E402
-from adv_rollouts import sample_reactive_decision                              # noqa: E402
-from kimi_judge import DEFAULT_CACHE_PATH, DEFAULT_MODEL, judge_trajectory, load_api_key, reference_for_task  # noqa: E402
+from advsim2real.adversary.rollouts import sample_reactive_decision
+from advsim2real.judge.llm_judge import DEFAULT_CACHE_PATH, DEFAULT_MODEL, judge_trajectory, load_api_key, reference_for_task
+from advsim2real.world.rollouts import rollout_episode
 
 
 def rollout(task, idx, seed, args, inject):

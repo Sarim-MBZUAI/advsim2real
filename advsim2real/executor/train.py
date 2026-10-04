@@ -11,23 +11,19 @@ import argparse
 import json
 import random
 import re
-import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import torch
 
-PKG_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(PKG_DIR))
-
-from _lib.rewards import advantage_scaler                             # noqa: E402
-from _lib.grpo import GRPOConfig, GRPOTrainer                         # noqa: E402
-from _lib.schedules import executor_task_schedule                     # noqa: E402
-from web_consistency import trajectory_signature                      # noqa: E402
-from web_rollouts import AGENT_SYSTEM, WORLD_API, WORLD_MODEL, _WebWorld, parse_action  # noqa: E402
-from kimi_judge import (DEFAULT_MODEL as JUDGE_MODEL, DEFAULT_CACHE_PATH as JUDGE_CACHE,  # noqa: E402
-                        judge_trajectory, load_api_key, reference_for_task)
+from advsim2real.judge.llm_judge import (DEFAULT_MODEL as JUDGE_MODEL, DEFAULT_CACHE_PATH as JUDGE_CACHE,
+                                        judge_trajectory, load_api_key, reference_for_task)
+from advsim2real.training.grpo import GRPOConfig, GRPOTrainer
+from advsim2real.training.rewards import advantage_scaler
+from advsim2real.training.schedules import executor_task_schedule
+from advsim2real.world.consistency import trajectory_signature
+from advsim2real.world.rollouts import AGENT_SYSTEM, WORLD_API, WORLD_MODEL, _WebWorld, parse_action
 
 EXEC_SYSTEM = "/no_think\n" + AGENT_SYSTEM
 TERMINAL = ("send_msg_to_user",)
@@ -131,7 +127,7 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3.5-4B")
     ap.add_argument("--init_adapter", default=None)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--tasks_file", required=True, help="judged tasks (judge_rollouts.py) with p_hat")
+    ap.add_argument("--tasks_file", required=True, help="judged tasks (advsim2real.judge.judge_rollouts) with p_hat")
     ap.add_argument("--world_api", default=WORLD_API)
     ap.add_argument("--world_model", default=WORLD_MODEL)
     ap.add_argument("--steps", type=int, default=10)

@@ -14,14 +14,11 @@ import threading
 import time
 from pathlib import Path
 
-PKG_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(PKG_DIR))
-
-from _lib.rewards import repetition_penalty                          # noqa: E402
-from adv_prompts import ADVERSARY_SYSTEM_IMPERATIVE, parse_adv_completion  # noqa: E402
-from adv_rollouts import adversary_reward, k_rollouts_adv, prepare_clean_baselines  # noqa: E402
-from _lib.grpo import GRPOConfig, GRPOTrainer                        # noqa: E402
-from kimi_judge import DEFAULT_MODEL as JUDGE_MODEL, DEFAULT_CACHE_PATH as JUDGE_CACHE, load_api_key, reference_for_task  # noqa: E402
+from advsim2real.adversary.prompts import ADVERSARY_SYSTEM_IMPERATIVE, parse_adv_completion
+from advsim2real.adversary.rollouts import adversary_reward, k_rollouts_adv, prepare_clean_baselines
+from advsim2real.judge.llm_judge import DEFAULT_MODEL as JUDGE_MODEL, DEFAULT_CACHE_PATH as JUDGE_CACHE, load_api_key, reference_for_task
+from advsim2real.training.grpo import GRPOConfig, GRPOTrainer
+from advsim2real.training.rewards import repetition_penalty
 
 INVALID_REWARD = -1.0
 
@@ -31,7 +28,7 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3.5-4B")
     ap.add_argument("--init_adapter", default=None)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--base_tasks", required=True, help="clean-judged tasks with clean_p_hat (stage2_data.py prepare)")
+    ap.add_argument("--base_tasks", required=True, help="clean-judged tasks with clean_p_hat (advsim2real.adversary.stage2_data prepare)")
     ap.add_argument("--min_clean_success", type=float, default=0.5)
     ap.add_argument("--K", type=int, default=4, help="clean controls per task")
     ap.add_argument("--max_steps", type=int, default=8)

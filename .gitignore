@@ -6,3 +6,5 @@ runs_stage1/
 runs_stage2/
 eval/
 *.log
+.judge_cache.jsonl
+*.egg-info/

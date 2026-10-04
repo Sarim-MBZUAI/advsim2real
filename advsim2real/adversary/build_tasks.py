@@ -3,14 +3,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from adv_prompts import ADVERSARY_SYSTEM_IMPERATIVE                    # noqa: E402
-from adv_rollouts import sample_attack                                 # noqa: E402
+from advsim2real.adversary.prompts import ADVERSARY_SYSTEM_IMPERATIVE
+from advsim2real.adversary.rollouts import sample_attack
 
 
 def main():

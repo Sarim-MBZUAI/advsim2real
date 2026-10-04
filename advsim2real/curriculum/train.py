@@ -13,13 +13,10 @@ import random
 import sys
 from pathlib import Path
 
-PKG_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(PKG_DIR))
-
-from _lib.rewards import curriculum_reward, repetition_penalty         # noqa: E402
-from web_curriculum import WEB_CURRICULUM_SYSTEM, WEB_DOMAINS, parse_web_completion  # noqa: E402
-from _lib.grpo import GRPOConfig, GRPOTrainer                          # noqa: E402
-from _lib.schedules import replay_epoch_schedule                       # noqa: E402
+from advsim2real.curriculum.prompts import WEB_CURRICULUM_SYSTEM, WEB_DOMAINS, parse_web_completion
+from advsim2real.training.grpo import GRPOConfig, GRPOTrainer
+from advsim2real.training.rewards import curriculum_reward, repetition_penalty
+from advsim2real.training.schedules import replay_epoch_schedule
 
 
 def agent0_curriculum_reward(p_hat: float, pseudo_label: str | None, rep_penalty: float = 0.0) -> float:
@@ -59,7 +56,7 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3.5-4B")
     ap.add_argument("--init_adapter", default=None)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--tasks_file", required=True, help="judged proposals (judge_rollouts.py)")
+    ap.add_argument("--tasks_file", required=True, help="judged proposals (advsim2real.judge.judge_rollouts)")
     ap.add_argument("--rep_lambda", type=float, default=0.3)
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--group_size", type=int, default=6)

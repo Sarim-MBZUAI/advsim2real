@@ -4,15 +4,12 @@ from __future__ import annotations
 import argparse
 import difflib
 import json
-import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import requests
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from web_curriculum import WEB_CURRICULUM_SYSTEM, WEB_DOMAINS, parse_web_completion  # noqa: E402
+from advsim2real.curriculum.prompts import WEB_CURRICULUM_SYSTEM, WEB_DOMAINS, parse_web_completion
 
 
 def propose_task(api_url, model, domain, *, max_tokens, temperature=1.0, timeout=180, retries=3):

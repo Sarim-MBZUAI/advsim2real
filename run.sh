@@ -39,11 +39,11 @@ stop() {  # pid port
 }
 trap 'stop "$SP" $SECOND_PORT; stop "$EP" $EXEC_PORT' EXIT
 judge() {  # tasks out K max_steps [extra...]
-  "$PY" judge_rollouts.py --tasks "$1" --out "$2" --K "$3" --max_steps "$4" --executor_api "$EXEC_API" \
+  "$PY" -m advsim2real.judge.judge_rollouts --tasks "$1" --out "$2" --K "$3" --max_steps "$4" --executor_api "$EXEC_API" \
     --world_api "$WORLD_API" --world_model "$WORLD_NAME" --judge_model "$JUDGE_MODEL" --workers "$JUDGE_WORKERS" "${@:5}"
 }
 propose() {  # out n
-  "$PY" build_tasks.py --out "$1" --n_proposals "$2" --curriculum_api "$SECOND_API"
+  "$PY" -m advsim2real.curriculum.propose --out "$1" --n_proposals "$2" --curriculum_api "$SECOND_API"
 }
 
 stage1() {   # defaults: recorded Stage-1 configuration (paper App. C.6)
@@ -57,7 +57,7 @@ stage1() {   # defaults: recorded Stage-1 configuration (paper App. C.6)
     propose "$S1/raw_tasks_v$t.json" "$NPROP"
     judge "$S1/raw_tasks_v$t.json" "$S1/judged_tasks_v$t.json" "$K" "$MAX_STEPS"
     stop "$SP" $SECOND_PORT; stop "$EP" $EXEC_PORT; SP=""; EP=""
-    CUDA_VISIBLE_DEVICES=$TGPU "$PY" train_curriculum.py --model "$BASE" ${init_c[@]+"${init_c[@]}"} \
+    CUDA_VISIBLE_DEVICES=$TGPU "$PY" -m advsim2real.curriculum.train --model "$BASE" ${init_c[@]+"${init_c[@]}"} \
       --tasks_file "$S1/judged_tasks_v$t.json" --out "$S1/curr_v$t" --epochs "${CURR_EPOCHS:-1}" \
       --group_size "${CURR_GROUP:-6}" --prompts_per_step "$PPS" --rep_lambda "$REP_LAMBDA" --micro_bs 1 "${TRAIN[@]}"
     # B) updated curriculum proposes, executor assessed, executor update
@@ -66,7 +66,7 @@ stage1() {   # defaults: recorded Stage-1 configuration (paper App. C.6)
     propose "$S1/raw_exec_tasks_v$t.json" "$NPROP"
     judge "$S1/raw_exec_tasks_v$t.json" "$S1/judged_exec_tasks_v$t.json" "$K" "$MAX_STEPS"
     stop "$SP" $SECOND_PORT; stop "$EP" $EXEC_PORT; SP=""; EP=""
-    CUDA_VISIBLE_DEVICES=$TGPU "$PY" train_executor.py --model "$BASE" ${init_e[@]+"${init_e[@]}"} \
+    CUDA_VISIBLE_DEVICES=$TGPU "$PY" -m advsim2real.executor.train --model "$BASE" ${init_e[@]+"${init_e[@]}"} \
       --tasks_file "$S1/judged_exec_tasks_v$t.json" --out "$S1/exec_v$t" --epochs "${EXEC_EPOCHS:-2}" \
       --group_size "${EXEC_GROUP:-6}" --prompts_per_step "$PPS" --max_steps "$MAX_STEPS" \
       --world_api "$WORLD_API" --world_model "$WORLD_NAME" --judge_model "$JUDGE_MODEL" \
@@ -87,27 +87,27 @@ stage2() {
     stop "$SP" $SECOND_PORT; SP=""
     EP=$(serve $EXEC_PORT $EXEC_SERVE_GPU "$S2/exec_serve_v$t.log" exec "$exe")
     judge "$S2/base_tasks_v$t.json" "$S2/judged_clean_v$t.json" "$K" "$MAX_STEPS" --max_repeat 0
-    "$PY" stage2_data.py prepare --tasks "$S2/judged_clean_v$t.json" --out "$S2/eligible_base_v$t.json" \
+    "$PY" -m advsim2real.adversary.stage2_data prepare --tasks "$S2/judged_clean_v$t.json" --out "$S2/eligible_base_v$t.json" \
       --clean_out "$S2/clean_tasks_v$t.json" --min_clean_success "$MIN"
     # 2) adversary update against the fixed executor (success-flip reward)
-    CUDA_VISIBLE_DEVICES=$TGPU "$PY" train_adversary.py --model "$BASE" ${adv_init[@]+"${adv_init[@]}"} \
+    CUDA_VISIBLE_DEVICES=$TGPU "$PY" -m advsim2real.adversary.train --model "$BASE" ${adv_init[@]+"${adv_init[@]}"} \
       --base_tasks "$S2/eligible_base_v$t.json" --min_clean_success "$MIN" --K "$K" --max_steps "$MAX_STEPS" \
       --exec_api "$EXEC_API" --world_api "$WORLD_API" --world_model "$WORLD_NAME" --judge_model "$JUDGE_MODEL" \
       --judge_workers "$JUDGE_WORKERS" --out "$S2/adv_v$t" --steps "${ADV_STEPS:-6}" --epochs "${ADV_EPOCHS:-0}" \
       --group_size "${ADV_GROUP:-6}" --prompts_per_step "$PPS" --rep_lambda "$REP_LAMBDA" --micro_bs 1 "${TRAIN[@]}"
     # 3) attacks from adv_v$t + earlier attacks + clean tasks, assessed with the current executor
     SP=$(serve $SECOND_PORT $SECOND_SERVE_GPU "$S2/adv_serve_v$t.log" adv "$S2/adv_v$t")
-    "$PY" build_adv_tasks.py --pool "$S2/eligible_base_v$t.json" --out "$S2/raw_adv_v$t.json" \
+    "$PY" -m advsim2real.adversary.build_tasks --pool "$S2/eligible_base_v$t.json" --out "$S2/raw_adv_v$t.json" \
       --adversary_api "$SECOND_API" --seed "$t"
     stop "$SP" $SECOND_PORT; SP=""
     history=(); for p in $(seq 1 $((t-1))); do history+=("$S2/raw_adv_v$p.json"); done
-    "$PY" stage2_data.py mix --fresh "$S2/raw_adv_v$t.json" --clean "$S2/clean_tasks_v$t.json" \
+    "$PY" -m advsim2real.adversary.stage2_data mix --fresh "$S2/raw_adv_v$t.json" --clean "$S2/clean_tasks_v$t.json" \
       --history ${history[@]+"${history[@]}"} --out "$S2/raw_exec_mix_v$t.json" --seed "$t" \
       --replay_fraction "${REPLAY_FRACTION:-0.25}" --clean_fraction "${CLEAN_FRACTION:-0.25}"
     judge "$S2/raw_exec_mix_v$t.json" "$S2/judged_exec_mix_v$t.json" "$K" "$MAX_STEPS" --max_repeat 0
     stop "$EP" $EXEC_PORT; EP=""
     # 4) executor update on the mixture
-    CUDA_VISIBLE_DEVICES=$TGPU "$PY" train_executor.py --model "$BASE" --init_adapter "$exe" \
+    CUDA_VISIBLE_DEVICES=$TGPU "$PY" -m advsim2real.executor.train --model "$BASE" --init_adapter "$exe" \
       --tasks_file "$S2/judged_exec_mix_v$t.json" --out "$S2/exec_v$t" --steps "${EXEC_STEPS:-6}" \
       --epochs "${EXEC_EPOCHS:-1}" --group_size "${EXEC_GROUP:-4}" --prompts_per_step "$PPS" --max_steps "$MAX_STEPS" \
       --world_api "$WORLD_API" --world_model "$WORLD_NAME" --judge_model "$JUDGE_MODEL" \
@@ -123,7 +123,7 @@ evaluate() {  # EXECS="tag:adapter_dir ..." (empty dir = base model); EVAL_ADV =
     tag=${entry%%:*}; adapter=${entry#*:}
     EP=$(serve $EXEC_PORT $EXEC_SERVE_GPU "$out/${tag}_serve.log" exec "$adapter")
     for mode in clean attacked; do
-      "$PY" eval_robustness.py --bench data/tasks.json --mode "$mode" --adversary_api "$SECOND_API" \
+      "$PY" -m advsim2real.evaluation.robustness --bench data/tasks.json --mode "$mode" --adversary_api "$SECOND_API" \
         --executor_api "$EXEC_API" --world_api "$WORLD_API" --world_model "$WORLD_NAME" --seeds "${SEEDS:-0 1 2}" \
         --max_steps "${EVAL_MAX_STEPS:-12}" --temperature "${TEMP:-0.7}" --judge_model "$JUDGE_MODEL" \
         --workers "$JUDGE_WORKERS" --out "$out/${tag}_${mode}.json"
