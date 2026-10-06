@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdvSim2Real</title>
+<meta name="description" content="AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model.">
+<meta property="og:title" content="AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model">
+<meta property="og:description" content="Co-evolving a task curriculum, an injection adversary and a web agent inside a frozen web world model.">
+<meta property="og:image" content="static/images/fig_overview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fbfaf8; --surface: #ffffff; --text: #1d1d1f; --muted: #5f6368; --line: #e4e2dd;
+  --accent: #a8382c; --accent-2: #2f5d8c; --chip: #f1efea; --figure-bg: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141517; --surface: #1c1d20; --text: #e9e7e3; --muted: #a2a5ab; --line: #2e3034;
+    --accent: #e0796b; --accent-2: #8cb4dc; --chip: #26282c; --figure-bg: #f4f3f0;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141517; --surface: #1c1d20; --text: #e9e7e3; --muted: #a2a5ab; --line: #2e3034;
+  --accent: #e0796b; --accent-2: #8cb4dc; --chip: #26282c; --figure-bg: #f4f3f0;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.65 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+header { padding: 64px 0 32px; text-align: center; }
+h1 {
+  font-family: "Source Serif 4", Georgia, serif; font-weight: 600;
+  font-size: clamp(1.7rem, 4.2vw, 2.6rem); line-height: 1.2; margin: 0 auto 24px; max-width: 820px;
+}
+h1 .name { color: var(--accent); }
+.authors { font-size: 1.05rem; margin: 0 0 6px; }
+.authors a { color: var(--text); border-bottom: 1px solid var(--line); }
+.authors a:hover { border-color: var(--accent-2); text-decoration: none; color: var(--accent-2); }
+.authors span { white-space: nowrap; margin: 0 8px; display: inline-block; }
+.affil { color: var(--muted); font-size: .92rem; margin: 0 0 4px; }
+.affil span { white-space: nowrap; margin: 0 8px; display: inline-block; }
+.links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px;
+  background: var(--text); color: var(--bg); font-weight: 500; font-size: .95rem;
+}
+.btn:hover { text-decoration: none; opacity: .85; }
+.btn svg { width: 16px; height: 16px; fill: currentColor; }
+section { padding: 36px 0; border-top: 1px solid var(--line); }
+h2 {
+  font-family: "Source Serif 4", Georgia, serif; font-weight: 600; font-size: 1.6rem;
+  margin: 0 0 16px; text-align: center;
+}
+h3 { font-size: 1.05rem; margin: 24px 0 8px; }
+p { margin: 0 0 14px; }
+.abstract { max-width: 760px; margin: 0 auto; text-align: justify; hyphens: auto; }
+figure { margin: 20px 0; }
+figure img {
+  width: 100%; height: auto; display: block; background: var(--figure-bg);
+  border-radius: 10px; padding: 12px; border: 1px solid var(--line);
+}
+figcaption { color: var(--muted); font-size: .9rem; margin-top: 10px; text-align: center; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8px 0 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.stat b { display: block; font-size: 1.45rem; font-family: "Source Serif 4", Georgia, serif; color: var(--accent); }
+.stat small { color: var(--muted); font-size: .85rem; line-height: 1.4; display: block; }
+.stages { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.stage h3 { margin-top: 0; }
+.stage ol { margin: 0; padding-left: 20px; }
+.stage li { margin-bottom: 6px; }
+.s1 h3 { color: var(--accent-2); } .s2 h3 { color: var(--accent); }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 4px; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+thead th { font-weight: 600; border-bottom: 2px solid var(--text); }
+tr.ours td { font-weight: 600; background: var(--chip); }
+tr.group td { border-top: 2px solid var(--line); }
+.note { color: var(--muted); font-size: .88rem; }
+pre {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+  overflow-x: auto; font: .85rem/1.55 "JetBrains Mono", ui-monospace, monospace; margin: 0;
+}
+.bib { position: relative; }
+.copy {
+  position: absolute; top: 10px; right: 10px; border: 1px solid var(--line); background: var(--chip);
+  color: var(--text); border-radius: 6px; padding: 4px 10px; font: 500 .8rem Inter, sans-serif; cursor: pointer;
+}
+footer { padding: 32px 0 48px; color: var(--muted); font-size: .85rem; text-align: center; border-top: 1px solid var(--line); }
+.theme {
+  position: fixed; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; font-size: 1rem;
+}
+@media (max-width: 720px) {
+  header { padding-top: 56px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stages { grid-template-columns: 1fr; }
+  .abstract { text-align: left; }
+  figure img { padding: 6px; }
+}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle colour theme">◐</button>
+
+<header class="wrap">
+  <h1><span class="name">AdvSim2Real</span>: Training Web Agents Against Adaptive Prompt Injection in a Web World Model</h1>
+  <p class="authors">
+    <span><a href="https://sarim-mbzuai.github.io/">Sarim Hashmi</a><sup>1</sup></span>
+    <span><a href="https://mukul54.github.io/">Mukul Ranjan</a><sup>1</sup></span>
+    <span><a href="https://mishrakshitij.github.io/">Kshitij Mishra</a><sup>1</sup></span>
+    <span><a href="https://mikkuzne.github.io/">Mikhail Kuznetsov</a><sup>2</sup></span>
+    <span><a href="https://praneeth.mit.edu/">Praneeth Vepakomma</a><sup>1,3</sup></span>
+    <span><a href="https://nilslukas.github.io/">Nils Lukas</a><sup>1</sup></span>
+  </p>
+  <p class="affil">
+    <span><sup>1</sup>Mohamed bin Zayed University of Artificial Intelligence</span>
+    <span><sup>2</sup>Amazon</span>
+    <span><sup>3</sup>Massachusetts Institute of Technology</span>
+  </p>
+  <div class="links">
+    <a class="btn" href="https://github.com/Sarim-MBZUAI/advsim2real"><svg viewBox="0 0 24 24"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.3-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.74.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>Code</a>
+    <a class="btn" href="https://huggingface.co/Sarim-Hash/advsim2real-stage1-curr1epoch-exec2epochs-iter3-nprop150"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5zm0 2.3 6.6 3.7L12 11.7 5.4 8 12 4.3zM5 9.7l6 3.4v6.6l-6-3.3V9.7zm8 10v-6.6l6-3.4v6.7l-6 3.3z"/></svg>Checkpoints</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <figure>
+    <img src="static/images/fig_overview.png" alt="Overview: curriculum and adversary co-evolve with the web agent inside a frozen world model; completion over training; robustness gain over the base agent.">
+    <figcaption>(a) A curriculum proposes tasks (Stage 1) and an adversary inserts one timed injection (Stage 2) into pages that a frozen world model simulates; a frozen LLM judge rewards tasks solved about half the time and success flips. (b) Judged completion on the 150 tasks over training, clean and under the learned adversaries. (c) Base agent against the final checkpoint.</figcaption>
+  </figure>
+
+  <div class="stats">
+    <div class="stat"><b>74.89 → 81.33</b><small>clean completion (%)</small></div>
+    <div class="stat"><b>48.07 → 57.48</b><small>completion under the three learned adversaries (%)</small></div>
+    <div class="stat"><b>+33.6%</b><small>relative gain against the unseen Kimi-K3 adversary</small></div>
+    <div class="stat"><b>25.56 → 44.44</b><small>strict success in a real Chromium browser (%)</small></div>
+  </div>
+
+  <section>
+    <h2>Abstract</h2>
+    <div class="abstract">
+      <p>Web agents complete user requests by reading and acting on pages that third parties write, so an instruction planted on a page can redirect the agent away from the user's goal. The agent cannot simply ignore the page, because the page also holds the values and controls the task requires. Current defenses fine-tune the agent on injections fixed before training, and attackers that adapt to the trained model bypass them. Adversarial training lets the attacker adapt but keeps the tasks fixed, so a task stops teaching once the agent solves it.</p>
+      <p>We introduce AdvSim2Real, which co-evolves a task curriculum, an injection adversary, and the agent inside a frozen web world model. The curriculum is rewarded for tasks the agent solves about half of the time, and the adversary only for a <em>success flip</em>, an injection that turns a judged success into a failure. Training in the simulator makes a 4B agent both more capable and more robust: its completion rises with and without attacks, holds against a frontier-model adversary it never trained against, and its capability gain carries over to a real browser. On 150 web tasks, AdvSim2Real raises completion under this unseen adversary by 33.6% relative to the base agent. We release our code, the benchmark, and all checkpoint results.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Method</h2>
+    <p>AdvSim2Real trains three policies against one another inside WebWorld-14B, a frozen web world model that predicts the next page for any goal, page and action, including a page an adversary asks it to alter. Every trajectory is graded by a frozen LLM judge (Qwen3.8-27B). Training runs in two stages of three rounds each.</p>
+    <figure>
+      <img src="static/images/fig_method.png" alt="Two-stage training: Stage 1 trains the curriculum and the executor; Stage 2 trains the adversary and the executor with the curriculum frozen.">
+    </figure>
+    <div class="stages">
+      <div class="stage s1">
+        <h3>Stage 1 · curriculum and executor</h3>
+        <ol>
+          <li>The curriculum proposes tasks: a goal and a start page.</li>
+          <li>The executor runs each task several times; the judge grades every run.</li>
+          <li>The curriculum is rewarded for tasks solved about half the time.</li>
+          <li>Fresh tasks from the updated curriculum train the executor.</li>
+        </ol>
+      </div>
+      <div class="stage s2">
+        <h3>Stage 2 · adversary and executor</h3>
+        <ol>
+          <li>Save several clean runs on tasks the executor already solves.</li>
+          <li>The adversary proposes one injection and the step to insert it.</li>
+          <li>Each clean run is replayed to that step with the injection; only success flips are rewarded.</li>
+          <li>The executor trains on new and earlier attacks plus clean tasks.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Example</h2>
+    <figure>
+      <img src="static/images/fig_example.png" alt="The same injected notice makes the base agent click the forbidden Reset all button, while the trained agent ignores it and completes the task.">
+      <figcaption>The same injected notice diverts the base agent but not the trained one (task 34, Adv v2, seed 1). The base agent clicks the forbidden <em>Reset all</em> right after the notice appears and is judged bad; Robust iter 3 sees the notice before five actions, never clicks it, and is judged good.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Results</h2>
+    <h3>Judged task completion in WebWorld-14B (%)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Training</th><th>Executor</th><th>Clean</th><th>Adv v1</th><th>Adv v2</th><th>Adv v3</th><th>Mean</th></tr></thead>
+        <tbody>
+          <tr><td>Initial</td><td>Base</td><td>74.89 ± 1.39</td><td>51.11 ± 2.34</td><td>48.00 ± 4.16</td><td>45.11 ± 1.54</td><td>48.07 ± 0.56</td></tr>
+          <tr class="group"><td>Stage 1</td><td>Capability iter 1</td><td>78.00 ± 1.76</td><td>57.11 ± 2.69</td><td>54.00 ± 2.91</td><td>53.11 ± 6.41</td><td>54.74 ± 3.11</td></tr>
+          <tr><td></td><td>Capability iter 2</td><td>77.11 ± 0.38</td><td>58.89 ± 1.39</td><td>53.11 ± 4.54</td><td>54.22 ± 1.92</td><td>55.41 ± 1.68</td></tr>
+          <tr><td></td><td>Capability iter 3</td><td>79.33 ± 1.76</td><td>57.11 ± 1.39</td><td>52.35 ± 4.12</td><td>53.56 ± 3.67</td><td>54.34 ± 2.93</td></tr>
+          <tr class="group"><td>Stage 1 + 2</td><td>Robust iter 1</td><td>77.33 ± 0.67</td><td>55.11 ± 2.14</td><td>52.67 ± 4.67</td><td>53.33 ± 2.40</td><td>53.70 ± 1.89</td></tr>
+          <tr><td></td><td>Robust iter 2</td><td>78.00 ± 1.15</td><td>62.00 ± 2.00</td><td>54.44 ± 2.69</td><td>52.89 ± 1.39</td><td>56.44 ± 1.15</td></tr>
+          <tr class="ours"><td></td><td>Robust iter 3</td><td>81.33 ± 2.31</td><td>62.89 ± 4.73</td><td>54.89 ± 3.91</td><td>54.67 ± 3.53</td><td>57.48 ± 0.56</td></tr>
+          <tr class="group"><td>Hosted 9B</td><td>Qwen3.5-9B</td><td>78.22 ± 2.14</td><td>58.89 ± 3.36</td><td>57.10 ± 2.68</td><td>54.89 ± 1.68</td><td>56.96 ± 0.13</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Mean and sample standard deviation over three rollout seeds on the 150 benchmark tasks; Mean weights Adv v1–v3 equally.</p>
+
+    <h3>Completion under the unseen Kimi-K3 adversary (%)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Training</th><th>Executor</th><th>Clean</th><th>Kimi-K3</th></tr></thead>
+        <tbody>
+          <tr><td>Initial</td><td>Base</td><td>74.89 ± 1.39</td><td>23.00 ± 3.30</td></tr>
+          <tr class="group"><td>Stage 1 + 2</td><td>Robust iter 1</td><td>77.33 ± 0.67</td><td>29.67 ± 4.24</td></tr>
+          <tr><td></td><td>Robust iter 2</td><td>78.00 ± 1.15</td><td>30.33 ± 0.47</td></tr>
+          <tr class="ours"><td></td><td>Robust iter 3</td><td>81.33 ± 2.31</td><td>30.72 ± 3.04</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Kimi-K3 replaces the learned adversary with the same prompt, observation and one-injection budget; two rollout seeds.</p>
+
+    <h3>Sim-to-real transfer in a real Chromium browser (%)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Training</th><th>Executor</th><th>Strict success</th><th>Correct fields</th></tr></thead>
+        <tbody>
+          <tr><td>Initial</td><td>Base</td><td>25.56 ± 1.02</td><td>52.50 ± 3.14</td></tr>
+          <tr class="group"><td>Stage 1</td><td>Capability iter 1</td><td>31.78 ± 8.34</td><td>61.89 ± 7.45</td></tr>
+          <tr><td></td><td>Capability iter 2</td><td>43.56 ± 5.18</td><td>71.45 ± 4.97</td></tr>
+          <tr class="ours"><td></td><td>Capability iter 3</td><td>44.44 ± 5.00</td><td>73.24 ± 2.24</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Clean runs with live DOM observations and no world-model call. Strict success is a deterministic check of the submitted form; Correct fields counts the 746 target values per seed.</p>
+
+    <figure>
+      <img src="static/images/fig_analysis.png" alt="Analysis: Stage-1 removal ablation, Kimi-K3 against the learned adversaries, world-model versus browser outcomes, and attacked completion by skill stratum.">
+      <figcaption>(a) Removing Stage 1 costs clean completion but little attacked completion. (b) Kimi-K3 requests an injection far more often than the learned adversaries. (c) World-model verdicts against browser outcomes. (d) Attacked completion by skill stratum.</figcaption>
+    </figure>
+  </section>
+
+
+  <section>
+    <h2>BibTeX</h2>
+    <div class="bib">
+      <button class="copy" id="copy">Copy</button>
+<pre id="bibtex">@article{hashmi2026advsim2real,
+  title   = {AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model},
+  author  = {Hashmi, Sarim and Ranjan, Mukul and Mishra, Kshitij and Kuznetsov, Mikhail and
+             Vepakomma, Praneeth and Lukas, Nils},
+  journal = {Preprint},
+  year    = {2026}
+}</pre>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">AdvSim2Real · MBZUAI · Amazon · MIT</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem("theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  document.getElementById("theme").addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var btn = this;
+    navigator.clipboard.writeText(document.getElementById("bibtex").textContent).then(function () {
+      btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+    });
+  });
+})();
+</script>
+</body>
+</html>
