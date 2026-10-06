@@ -1,5 +1,37 @@
 # AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model
 
+[Sarim Hashmi](https://sarim-mbzuai.github.io/)<sup>1</sup>,
+[Mukul Ranjan](https://mukul54.github.io/)<sup>1</sup>,
+[Kshitij Mishra](https://mishrakshitij.github.io/)<sup>1</sup>,
+[Mikhail Kuznetsov](https://mikkuzne.github.io/)<sup>2</sup>,
+[Praneeth Vepakomma](https://praneeth.mit.edu/)<sup>1,3</sup>,
+[Nils Lukas](https://nilslukas.github.io/)<sup>1</sup>
+
+<sup>1</sup>Mohamed bin Zayed University of Artificial Intelligence &nbsp;
+<sup>2</sup>Amazon &nbsp;
+<sup>3</sup>Massachusetts Institute of Technology
+
+[Project page](https://sarim-mbzuai.github.io/advsim2real/) ·
+[Checkpoints](https://huggingface.co/Sarim-Hash/advsim2real-stage1-curr1epoch-exec2epochs-iter3-nprop150)
+
+## Abstract
+
+Web agents complete user requests by reading and acting on pages that third parties write, so an
+instruction planted on a page can redirect the agent away from the user's goal. The agent cannot
+simply ignore the page, because the page also holds the values and controls the task requires.
+Current defenses fine-tune the agent on injections fixed before training, and attackers that adapt to
+the trained model bypass them. Adversarial training lets the attacker adapt but keeps the tasks fixed,
+so a task stops teaching once the agent solves it. We introduce AdvSim2Real, which co-evolves a task
+curriculum, an injection adversary, and the agent inside a frozen web world model. The curriculum is
+rewarded for tasks the agent solves about half of the time, and the adversary only for a success flip,
+an injection that turns a judged success into a failure. Training in the simulator makes a 4B agent
+both more capable and more robust: its completion rises with and without attacks, holds against a
+frontier-model adversary it never trained against, and its capability gain carries over to a real
+browser. On 150 web tasks, AdvSim2Real raises completion under this unseen adversary by 33.6%
+relative to the base agent. We release our code, the benchmark, and all checkpoint results.
+
+## Overview
+
 Web agents read and act on pages that third parties write, so an instruction planted on a page can
 redirect the agent away from the user's goal. AdvSim2Real co-evolves a **task curriculum**, an
 **injection adversary** and the **web agent** (the executor) inside a frozen web world model
@@ -53,7 +85,8 @@ seeds on the 150 tasks; Mean weights Adv v1-v3 equally.
 | | **Robust iter 3** | **81.33 ± 2.31** | **62.89 ± 4.73** | **54.89 ± 3.91** | **54.67 ± 3.53** | **57.48 ± 0.56** |
 | Hosted 9B | Qwen3.5-9B | 78.22 ± 2.14 | 58.89 ± 3.36 | 57.10 ± 2.68 | 54.89 ± 1.68 | 56.96 ± 0.13 |
 
-**Completion under the unseen Kimi-K3 adversary (%)**, mean and sample standard deviation over seeds.
+**Completion under the unseen Kimi-K3 adversary (%)**, mean and sample standard deviation over two
+rollout seeds; Clean repeats the no-adversary column above.
 
 | Executor | Clean | Kimi-K3 |
 |---|---|---|
@@ -137,3 +170,15 @@ EVAL_ADV=runs_stage2/adv_v1 bash run.sh eval      # base, exec_v3 of both stages
 Stage-1 defaults follow App. C.6 (150 proposal positions, K=6, one curriculum epoch, two
 executor epochs, G=6, LoRA rank 16, lr 1e-5, KL 0.01, 4,096-token cap). All settings are
 environment variables at the top of `run.sh`.
+
+## Citation
+
+```bibtex
+@article{hashmi2026advsim2real,
+  title   = {AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model},
+  author  = {Hashmi, Sarim and Ranjan, Mukul and Mishra, Kshitij and Kuznetsov, Mikhail and
+             Vepakomma, Praneeth and Lukas, Nils},
+  journal = {Preprint},
+  year    = {2026}
+}
+```
