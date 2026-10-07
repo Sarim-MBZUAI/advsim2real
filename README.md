@@ -12,6 +12,7 @@
 <sup>3</sup>Massachusetts Institute of Technology
 
 [Project page](https://sarim-mbzuai.github.io/advsim2real/) ·
+[Paper (arXiv)](https://arxiv.org/abs/2610.08773) ·
 [Checkpoints](https://huggingface.co/Sarim-Hash/advsim2real-stage1-curr1epoch-exec2epochs-iter3-nprop150)
 
 ## Abstract
@@ -178,7 +179,8 @@ environment variables at the top of `run.sh`.
   title   = {AdvSim2Real: Training Web Agents Against Adaptive Prompt Injection in a Web World Model},
   author  = {Hashmi, Sarim and Ranjan, Mukul and Mishra, Kshitij and Kuznetsov, Mikhail and
              Vepakomma, Praneeth and Lukas, Nils},
-  journal = {Preprint},
-  year    = {2026}
+  journal = {arXiv preprint arXiv:2610.08773},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2610.08773}
 }
 ```
