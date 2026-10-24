@@ -159,6 +159,10 @@ footer { padding: 32px 0 48px; color: var(--muted); font-size: .85rem; text-alig
     <h2>Method</h2>
     <p>AdvSim2Real trains three policies against one another inside WebWorld-14B, a frozen web world model that predicts the next page for any goal, page and action, including a page an adversary asks it to alter. Every trajectory is graded by a frozen LLM judge (Qwen3.8-27B). Training runs in two stages of three rounds each.</p>
     <figure>
+      <img src="static/images/advsim2real-coevolution.gif" alt="Animated overview: in Stage 1 the curriculum and the agent co-evolve; in Stage 2 the curriculum is frozen and the adversary injects into the frozen world model while it co-evolves with the agent.">
+      <figcaption>Both stages in one loop. Stage 1: curriculum and agent co-evolve, with clean completion per round. Stage 2: the curriculum is frozen and the adversary steers the frozen world model with one timed injection per round; the judge rewards success flips.</figcaption>
+    </figure>
+    <figure>
       <img src="static/images/fig_method.png" alt="Two-stage training: Stage 1 trains the curriculum and the executor; Stage 2 trains the adversary and the executor with the curriculum frozen.">
     </figure>
     <div class="stages">
