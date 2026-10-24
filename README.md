@@ -15,6 +15,10 @@
 [Paper (arXiv)](https://arxiv.org/abs/2610.08773) ·
 [Checkpoints](https://huggingface.co/Sarim-Hash/advsim2real-stage1-curr1epoch-exec2epochs-iter3-nprop150)
 
+<p align="center">
+  <img src="assets/advsim2real-coevolution.gif" width="100%" alt="AdvSim2Real co-evolution: in Stage 1 the curriculum and the agent co-evolve; in Stage 2 the adversary injects into the frozen world model and co-evolves with the agent.">
+</p>
+
 ## Abstract
 
 Web agents complete user requests by reading and acting on pages that third parties write, so an
